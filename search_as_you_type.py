@@ -1,41 +1,44 @@
-from elastcsearch import Elasticsearch 
+from elasticsearch import Elasticsearch 
 es = Elasticsearch("http://localhost:9200")
 
-es.indices.create(
-    index = "autocomplete",
-    mappings = {
-        "properties":{
-            "title":{
-                "type": "search_as_you_type"
+if not es.indices.exists(index="autocomplete"):
+    es.indices.create(
+        index="autocomplete",
+        mappings={
+            "properties": {
+                "title": {
+                    "type": "search_as_you_type"
+                }
             }
         }
-    }
-
-)
+    )
+# index a document on the field that is mapped as search_as_you_type
 es.index(
     index="autocomplete",
-    id = 1,
-    document = {
-        "assets":"windows, mac, linux"
+    id=1,
+    document={
+        "title": "windows mac linux"
     },
-    refresh = True
+    refresh=True
 )
 
 query = {
     "query": {
         "multi_match": {
-            "query": "quick bro",
+            "query": "win ma",
             "type": "bool_prefix",
             "fields": [
-                "my_field",
-                "my_field._2gram",
-                "my_field._3gram"
+                "title",
+                "title._2gram",
+                "title._3gram"
             ]
         }
     }
 }
 
 response = es.search(
-    index=INDEX_NAME,
-    query=query["query"]
+    index="autocomplete",
+    body=query
 )
+
+print("hits:", response["hits"]["hits"])
