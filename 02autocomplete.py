@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch
-es = Elasticsearch("http://localhost:9200")
+es = Elasticsearch("https://localhost:9200")
 
 if not es.indices.exists(index="autocomplete02"):
     es.indices.create(
@@ -13,7 +13,7 @@ if not es.indices.exists(index="autocomplete02"):
                     "type":"text"
                 },
                 "length":{
-                    "type":"integer"
+                    "type":"keyword"
                 }
             }
         
@@ -39,14 +39,30 @@ def insert_doc(movie_list):
             refresh=True
         )
 query = {
-    "query": {
-        "multi_match": {
-            "query": "phir",
-            "type": "bool_prefix",
-            "fields": [
-                "movie_name",
-                "movie_name._2gram",
-                "movie_name._3gram"
+    "query":{
+        "bool":{
+            "should":[
+                {
+                    "multi_match":{
+                        "query":" ",
+                        "type":"bool_prefix",
+                        "fields":[
+                            "movie_name",
+                            "movie_name._2gram",
+                            "movie_name._3gram"
+                        ]
+                    }
+                },
+                {
+                    "match_phrase_prefix":{
+                        "genre":" ",
+                    }
+                },
+                {
+                    "prefix":{
+                        "length":" "
+                    }
+                }
             ]
         }
     }
