@@ -7,7 +7,7 @@ load_dotenv()
 es = Elasticsearch(
     hosts=[os.getenv('ELASTICSEARCH_URL')]
 )
-es.indices.delete(index="bank_index", ignore=[400, 404])
+es.options(ignore_status=[400, 404]).indices.delete(index="bank_index")
 if not es.indices.exists(index="bank_index"):
     es.indices.create(
         index="bank_index",
@@ -33,7 +33,7 @@ if not es.indices.exists(index="bank_index"):
         mappings={
             "properties":{
                 "customer_name":{
-                    "type":"search_as_you_type" 
+                    "type":"text" 
                 },
                 "customer_name_edge":{
                     "type":"text",
@@ -54,22 +54,22 @@ doc = [
     {
         "customer_name": "John Doe",
         "account_no": "spi123456789",
-        "location": "New York"
+        "location": "India"
     },
     {
         "customer_name": "Jane Smith",
         "account_no": "987654321",
-        "location": "Los Angeles"
+        "location": "Indonesia"
     },
     {
         "customer_name": "Alice Johnson",
         "account_no": "456789123",
-        "location": "Chicago"
+        "location": "Japan"
     },
     {
         "customer_name": "Bob Brown",
         "account_no": "789123456",
-        "location": "Houston"
+        "location": "China"
     },
     {
         "customer_name": "Nora Newman",
@@ -246,8 +246,10 @@ insert_doc(doc)
 query = {
     "query":{
         "match_phrase_prefix":{
-            "location":"n",
-            "max_expansions":5
+            "location": {
+                "query": "na",
+                "max_expansions": 50
+            }
         }
     }
 }
@@ -259,15 +261,15 @@ result = es.search(
 print("match_phrase_prefix result:", [hit["_source"] for hit in result["hits"]["hits"]])
 
 prefix_query = {
-    "query":{
-        "prefix":{
-            "account_no":"spi"
+    "prefix": {
+        "account_no": {
+            "value": "icici"
         }
     }
 }
 prefix_result = es.search(
     index="bank_index",
-    query=prefix_query["query"],
+    query=prefix_query, 
     _source=["account_no"]
 )
 print("prefix result:", [hit["_source"] for hit in prefix_result["hits"]["hits"]])
@@ -275,7 +277,7 @@ print("prefix result:", [hit["_source"] for hit in prefix_result["hits"]["hits"]
 edge_ngram_query = {
     "query":{
         "match":{
-            "customer_name_edge":"Jo"
+            "customer_name_edge":"r"
         }
     }
 }
