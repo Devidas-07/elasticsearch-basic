@@ -1,20 +1,21 @@
 from elasticsearch import Elasticsearch
 import os
 from dotenv import load_dotenv
-from data import doc
+from updated_data import doc_updated as doc
 
 # Load environment variables
 load_dotenv()
 
 # Elasticsearch client
 es = Elasticsearch(hosts=[os.getenv('ELASTICSEARCH_URL')])
-
+#delete index if exists
+es.options(ignore_status=[400, 404]).indices.delete(index="bank_index_updated")
 def create_index():
     """Create the bank_index with custom analyzers and mappings."""
     es.options(ignore_status=[400, 404]).indices.delete(index="bank_index")
     if not es.indices.exists(index="bank_index"):
         es.indices.create(
-            index="bank_index",
+            index="bank_index_updated",
             settings={
                 "analysis": {
                     "tokenizer": {
@@ -36,18 +37,18 @@ def create_index():
             },
             mappings={
                 "properties": {
-                    "customer_name": {
+                    "firstname": {
                         "type": "text"
                     },
-                    "customer_name_edge": {
+                    "firstname_edge": {
                         "type": "text",
                         "analyzer": "edge_ngram_analyzer",
                         "search_analyzer": "standard"
                     },
-                    "account_no": {
+                    "middlename": {
                         "type": "keyword"
                     },
-                    "location": {
+                    "lastname": {
                         "type": "text"
                     }
                 }
@@ -57,9 +58,9 @@ def create_index():
 def insert_documents(documents):
    
     for d in documents:
-        d["customer_name_edge"] = d["customer_name"]
+        d["firstname_edge"] = d["firstname"]
         es.index(
-            index="bank_index",
+            index="bank_index_updated",
             document=d,
             refresh=True
         )
@@ -69,32 +70,31 @@ def run_queries():
     query = {
         "query": {
             "match_phrase_prefix": {
-                "location": {
-                    "query": "Falls vall",
-                    "max_expansions": 3
+                "lastname": {
+                    "query": "Deepak Pa"
                 }
             }
         }
     }
     result = es.search(
-        index="bank_index",
+        index="bank_index_updated",
         query=query["query"],
-        _source=["location"]
+        _source=["lastname"]
     )
     print("match_phrase_prefix result:", [hit["_source"] for hit in result["hits"]["hits"]])
 
     # Prefix query
     prefix_query = {
         "prefix": {
-            "account_no": {
-                "value": "ici"
+            "middlename": {
+                "value": "Deepak Pa"
             }
         }
     }
     prefix_result = es.search(
-        index="bank_index",
+        index="bank_index_updated",
         query=prefix_query,
-        _source=["account_no"]
+        _source=["middlename"]
     )
     print("prefix result:", [hit["_source"] for hit in prefix_result["hits"]["hits"]])
 
@@ -102,14 +102,14 @@ def run_queries():
     edge_ngram_query = {
         "query": {
             "match": {
-                "customer_name_edge": "deepak pa"
+                "firstname_edge": "Deepak Pa"
             }
         }
     }
     edge_ngram_result = es.search(
-        index="bank_index",
+        index="bank_index_updated",
         query=edge_ngram_query["query"],
-        _source=["customer_name"]
+        _source=["firstname"]
     )
     print("edge n-gram result:", [hit["_source"] for hit in edge_ngram_result["hits"]["hits"]])
 
