@@ -21,7 +21,7 @@ def create_index():
                         "edge_ngram_tokenizer": {
                             "type": "edge_ngram",
                             "min_gram": 2,
-                            "max_gram": 10,
+                            "max_gram": 15,
                             "token_chars": ["letter", "digit"]
                         }
                     },
@@ -55,7 +55,7 @@ def create_index():
         )
 
 def insert_documents(documents):
-    """Insert documents into the index."""
+   
     for d in documents:
         d["customer_name_edge"] = d["customer_name"]
         es.index(
@@ -65,14 +65,13 @@ def insert_documents(documents):
         )
 
 def run_queries():
-    """Run sample queries and print results."""
-    # Match phrase prefix query
+   
     query = {
         "query": {
             "match_phrase_prefix": {
                 "location": {
-                    "query": "na",
-                    "max_expansions": 50
+                    "query": "Falls vall",
+                    "max_expansions": 3
                 }
             }
         }
@@ -88,7 +87,7 @@ def run_queries():
     prefix_query = {
         "prefix": {
             "account_no": {
-                "value": "icici22"
+                "value": "ici"
             }
         }
     }
@@ -103,7 +102,7 @@ def run_queries():
     edge_ngram_query = {
         "query": {
             "match": {
-                "customer_name_edge": "ra"
+                "customer_name_edge": "deepak pa"
             }
         }
     }

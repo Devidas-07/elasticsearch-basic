@@ -95,9 +95,9 @@ doc = [
         "location": "New London"
     },
     {
-        "customer_name": "Deepak Rao",
+        "customer_name": "Deepak Rao patil",
         "account_no": "icici556611",
-        "location": "Newton Falls"
+        "location": "Newton Falls valley"
     },
     {
         "customer_name": "Kavita Reddy",
@@ -111,13 +111,13 @@ doc = [
     },
     {
         "customer_name": "Jyoti Sen",
-        "account_no": "axis669900",
+        "account_no": "axis 669900",
         "location": "Nanuet"
     },
     {
-        "customer_name": "Anil Bhatia",
-        "account_no": "sbi445522",
-        "location": "Neptune"
+        "customer_name": "Anil Bhatia sharma",
+        "account_no": "sbi 445522",
+        "location": "Neptune City"
     },
     {
         "customer_name": "Leena Nair",
