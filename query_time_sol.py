@@ -69,13 +69,13 @@ create_index()
 insert_documents(doc)
 
 # query for keyword field
-
+input = "Che"
+print(f"input is {input}")
 # 
 query = {
     "wildcard": {
         "middlename": {
-            "value": "*Pa*",
-            "case_insensitive": True
+            "value": "{input}*"
         }
     }
 }
@@ -86,12 +86,30 @@ result_of_keyword_query = es.search(
     _source=["middlename"]
 )
 print("Keyword query result:", [hit["_source"] for hit in result_of_keyword_query["hits"]["hits"]])
-
+#fuzzines query for keyword field
+query = {
+    "query": {
+        "fuzzy": {
+            "middlename": {
+                "value": input,
+                "fuzziness": "AUTO",
+                "max_expansions": 50,
+                "prefix_length": 0
+            }
+        }
+    }
+}
+result_of_fuzzy_keyword_query = es.search(
+    index="bank_index_updated",
+    query=query["query"],
+    _source=["middlename"]
+)
+print("Fuzzy query result on keyword field:", [hit["_source"] for hit in result_of_fuzzy_keyword_query["hits"]["hits"]])
 #edge n gram query 
 query ={
     "query":{
         "match":{
-            "firstname_edge": "Deepak Pa"
+            "firstname_edge": input
         }
     }
 }
@@ -101,3 +119,24 @@ result_of_edge_ngram_query = es.search(
     _source=["firstname"]
 )
 print("Edge n-gram query result:", [hit["_source"] for hit in result_of_edge_ngram_query["hits"]["hits"]])
+
+#using fuzziness for text field
+query ={
+    "query":{
+        "match":{
+            "lastname": {
+                "query": input,
+                "fuzziness": "AUTO",
+                "fuzziness": 2,
+                "max_expansions": 50,
+                "prefix_length": 0
+            }
+        }
+    }
+}
+result_of_fuzzy_query = es.search(
+    index= "bank_index_updated",
+    query=query["query"],
+    _source=["lastname"]
+)
+print("Fuzzy query result on text field:", [hit["_source"] for hit in result_of_fuzzy_query["hits"]["hits"]])   
