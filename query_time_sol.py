@@ -69,10 +69,10 @@ create_index()
 insert_documents(doc)
 
 # query for keyword field
-input = "Che"
+input = "Pa"
 print(f"input is {input}")
 # 
-query = {
+query_on_keyword = {
     "wildcard": {
         "middlename": {
             "value": "{input}*"
@@ -82,12 +82,12 @@ query = {
 # Execute the query
 result_of_keyword_query = es.search(
     index="bank_index_updated",
-    query=query,
+    query=query_on_keyword,
     _source=["middlename"]
 )
 print("Keyword query result:", [hit["_source"] for hit in result_of_keyword_query["hits"]["hits"]])
 #fuzzines query for keyword field
-query = {
+fuzzy_query_on_keyword = {
     "query": {
         "fuzzy": {
             "middlename": {
@@ -101,12 +101,12 @@ query = {
 }
 result_of_fuzzy_keyword_query = es.search(
     index="bank_index_updated",
-    query=query["query"],
+    query=fuzzy_query_on_keyword["query"],
     _source=["middlename"]
 )
 print("Fuzzy query result on keyword field:", [hit["_source"] for hit in result_of_fuzzy_keyword_query["hits"]["hits"]])
 #edge n gram query 
-query ={
+edge_ngram_query ={
     "query":{
         "match":{
             "firstname_edge": input
@@ -115,25 +115,40 @@ query ={
 }
 result_of_edge_ngram_query = es.search(
     index= "bank_index_updated",
-    query=query["query"],
+    query=edge_ngram_query["query"],
     _source=["firstname"]
 )
 print("Edge n-gram query result:", [hit["_source"] for hit in result_of_edge_ngram_query["hits"]["hits"]])
 
 #using fuzziness for text field
 query ={
-    "query":{
-        "match":{
-            "lastname": {
+    "query": {
+        "bool": {
+        "should": [
+            {
+            "match": {
+                "lastname": {
+                "query": input,
+                "boost": 5
+                }
+            }
+            },
+            {
+            "match": {
+                "lastname": {
                 "query": input,
                 "fuzziness": "AUTO",
-                "fuzziness": 2,
-                "max_expansions": 50,
-                "prefix_length": 0
+                "prefix_length": 2,
+                "max_expansions": 30,
+                "fuzzy_transpositions": True
+                }
             }
+            }
+        ]
         }
     }
 }
+
 result_of_fuzzy_query = es.search(
     index= "bank_index_updated",
     query=query["query"],
